@@ -1,0 +1,14 @@
+A textbox for adding new vertices to the graph V
+A button to add the vertex to the graph V
+A listbox to display all vertices in the graph V
+Textboxes for adding new edges between vertixes, including length, time, and cost ///done in the BackEnd without try-catch for checking availability of vertexes
+A button to add the edge to the graph V
+A listbox to display all edges in the graph V
+Buttons to temporarily disable or enable a vertex or edge in the graph /// done in the BackEnd
+Buttons to edit the name of a vertex or the characteristics of an edge /// done in the BackEnd
+Delition of Edges /// done in the BackEnd
+Delition of Node ///  done in the BackEnd
+Textboxes to input the start and end vertices for finding the shortest path X
+Radio buttons to select the characteristic to optimize for when finding the shortest path (length, time, or cost) X
+A button to find the shortest path between the two vertices V
+Buttons to save and load the graph data to and from a text file. V /// not done in the BackEnd

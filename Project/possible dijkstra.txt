@@ -1,0 +1,127 @@
+using System;
+using System.Collections.Generic;
+
+// Define a class to represent a vertex in the graph
+public class Vertex {
+    public string name;
+    public Dictionary<Vertex, Edge> neighbors = new Dictionary<Vertex, Edge>();
+    public double distance = double.MaxValue;
+    public bool visited = false;
+    public Vertex previous = null;
+
+    public Vertex(string name) {
+        this.name = name;
+    }
+}
+
+// Define a class to represent an edge in the graph
+public class Edge {
+    public double length;
+    public double time;
+    public double cost;
+
+    public Edge(double length, double time, double cost) {
+        this.length = length;
+        this.time = time;
+        this.cost = cost;
+    }
+}
+
+// Define a class to represent the graph
+public class Graph {
+    public Dictionary<string, Vertex> vertices = new Dictionary<string, Vertex>();
+
+    public void AddVertex(string name) {
+        Vertex vertex = new Vertex(name);
+        vertices.Add(name, vertex);
+    }
+
+    public void AddEdge(string sourceName, string destinationName, double length, double time, double cost) {
+        Vertex source = vertices[sourceName];
+        Vertex destination = vertices[destinationName];
+        Edge edge = new Edge(length, time, cost);
+
+        source.neighbors.Add(destination, edge);
+        destination.neighbors.Add(source, edge);
+    }
+
+    public void RemoveVertex(string name) {
+        Vertex vertex = vertices[name];
+        List<Vertex> neighbors = new List<Vertex>(vertex.neighbors.Keys);
+
+        foreach (Vertex neighbor in neighbors) {
+            RemoveEdge(name, neighbor.name);
+        }
+
+        vertices.Remove(name);
+    }
+
+    public void RemoveEdge(string sourceName, string destinationName) {
+        Vertex source = vertices[sourceName];
+        Vertex destination = vertices[destinationName];
+
+        source.neighbors.Remove(destination);
+        destination.neighbors.Remove(source);
+    }
+
+    // Dijkstra's algorithm for finding the shortest path between two vertices
+    public List<Vertex> Dijkstra(string sourceName, string destinationName, string property) {
+        // Set all vertices to unvisited and infinity distance from source
+        foreach (Vertex vertex in vertices.Values) {
+            vertex.distance = double.MaxValue;
+            vertex.visited = false;
+        }
+
+        Vertex source = vertices[sourceName];
+        source.distance = 0;
+
+        // Create a priority queue for the vertices
+        PriorityQueue<Vertex> priorityQueue = new PriorityQueue<Vertex>();
+        priorityQueue.Enqueue(source, source.distance);
+
+        while (priorityQueue.Count > 0) {
+            Vertex current = priorityQueue.Dequeue();
+
+            if (current.visited) {
+                continue;
+            }
+
+            current.visited = true;
+
+            if (current.name == destinationName) {
+                break;
+            }
+
+            foreach (KeyValuePair<Vertex, Edge> neighbor in current.neighbors) {
+                Vertex next = neighbor.Key;
+                Edge edge = neighbor.Value;
+
+                double weight = 0;
+
+                // Choose the weight based on the specified property
+                switch (property) {
+                    case "length":
+                        weight = edge.length;
+                        break;
+                    case "time":
+                        weight = edge.time;
+                        break;
+                    case "cost":
+                        weight = edge.cost;
+                        break;
+                    default:
+                        throw new ArgumentException("Invalid property specified");
+                }
+
+                double distanceThroughCurrent = current.distance + weight;
+
+                if (distanceThroughCurrent < next.distance) {
+                    next.distance = distanceThroughCurrent;
+                    next.previous = current;
+                    priorityQueue.Enqueue(next, next.distance);
+                }
+            }
+        }
+
+        // Build the shortest path from source to destination
+        List<Vertex> path = new List<Vertex
