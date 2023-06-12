@@ -1,0 +1,256 @@
+namespace GraphApp
+{
+    public partial class MainForm : Form
+    {
+        private Dictionary<string, Dictionary<string, Edge>> graph;
+        private HashSet<string> disabledNodes;
+        private HashSet<Edge> disabledEdges;
+
+        public MainForm()
+        {
+            InitializeComponent();
+            graph = new Dictionary<string, Dictionary<string, Edge>>();
+            disabledNodes = new HashSet<string>();
+            disabledEdges = new HashSet<Edge>();
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            LoadGraphFromFile();
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            SaveGraphToFile();
+        }
+
+        private void LoadGraphFromFile()
+        {
+            string filename = "graph.txt";
+            if (File.Exists(filename))
+            {
+                try
+                {
+                    using (StreamReader reader = new StreamReader(filename))
+                    {
+                        graph.Clear();
+                        disabledNodes.Clear();
+                        disabledEdges.Clear();
+
+                        string line;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            string[] parts = line.Split(';');
+                            string node1 = parts[0];
+                            string node2 = parts[1];
+                            double length = double.Parse(parts[2]);
+                            double time = double.Parse(parts[3]);
+                            double price = double.Parse(parts[4]);
+                            bool disabled = bool.Parse(parts[5]);
+
+                            if (!graph.ContainsKey(node1))
+                                graph[node1] = new Dictionary<string, Edge>();
+                            if (!graph.ContainsKey(node2))
+                                graph[node2] = new Dictionary<string, Edge>();
+
+                            Edge edge = new Edge(node1, node2, length, time, price);
+                            graph[node1][node2] = edge;
+                            graph[node2][node1] = edge;
+
+                            if (disabled)
+                                disabledEdges.Add(edge);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading graph from file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void SaveGraphToFile()
+        {
+            string filename = "graph.txt";
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(filename))
+                {
+                    foreach (string node1 in graph.Keys)
+                    {
+                        foreach (string node2 in graph[node1].Keys)
+                        {
+                            Edge edge = graph[node1][node2];
+                            bool disabled = disabledEdges.Contains(edge);
+
+                            writer.WriteLine($"{node1};{node2};{edge.Length};{edge.Time};{edge.Price};{disabled}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving graph to file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void addNodeButton_Click(object sender, EventArgs e)
+        {
+            string node = nodeNameTextBox.Text.Trim();
+            if (node.Length == 0)
+            {
+                MessageBox.Show("Please enter a node name.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (graph.ContainsKey(node))
+            {
+                MessageBox.Show("Node already exists in the graph.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            graph[node] = new Dictionary<string, Edge>();
+            UpdateNodesList();
+            nodeNameTextBox.Clear();
+        }
+
+        private void removeNodeButton_Click(object sender, EventArgs e)
+        {
+            string node = nodesListBox.SelectedItem as string;
+            if (node == null)
+            {
+                MessageBox.Show("Please select a node to remove.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error
+	     }
+	}
+  private void Form1_Load(object sender, EventArgs e)
+        {
+            LoadGraphData();
+            RefreshGraph();
+        }
+
+        private void LoadGraphData()
+        {
+            try
+            {
+                using (StreamReader reader = new StreamReader("graph.txt"))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        string[] parts = line.Split(',');
+                        string vertex1 = parts[0];
+                        string vertex2 = parts[1];
+                        int length = int.Parse(parts[2]);
+                        int time = int.Parse(parts[3]);
+                        int price = int.Parse(parts[4]);
+
+                        if (!graph.ContainsKey(vertex1))
+                        {
+                            graph[vertex1] = new Dictionary<string, Edge>();
+                        }
+                        if (!graph.ContainsKey(vertex2))
+                        {
+                            graph[vertex2] = new Dictionary<string, Edge>();
+                        }
+                        graph[vertex1][vertex2] = new Edge(length, time, price);
+                        graph[vertex2][vertex1] = new Edge(length, time, price);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading graph data: " + ex.Message);
+            }
+        }
+
+        private void SaveGraphData()
+        {
+            try
+            {
+                using (StreamWriter writer = new StreamWriter("graph.txt"))
+                {
+                    foreach (string vertex1 in graph.Keys)
+                    {
+                        foreach (string vertex2 in graph[vertex1].Keys)
+                        {
+                            Edge edge = graph[vertex1][vertex2];
+                            writer.WriteLine($"{vertex1},{vertex2},{edge.Length},{edge.Time},{edge.Price}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving graph data: " + ex.Message);
+            }
+        }
+
+        private void RefreshGraph()
+        {
+            listBoxVertices.Items.Clear();
+            listBoxEdges.Items.Clear();
+            foreach (string vertex in graph.Keys)
+            {
+                listBoxVertices.Items.Add(vertex);
+            }
+        }
+
+        private void listBoxVertices_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string selectedVertex = (string)listBoxVertices.SelectedItem;
+            if (selectedVertex != null)
+            {
+                listBoxEdges.Items.Clear();
+                foreach (string adjacentVertex in graph[selectedVertex].Keys)
+                {
+                    listBoxEdges.Items.Add($"{selectedVertex} - {adjacentVertex}");
+                }
+            }
+        }
+
+        private void buttonAddVertex_Click(object sender, EventArgs e)
+        {
+            string newVertex = textBoxNewVertex.Text;
+            if (newVertex != "" && !graph.ContainsKey(newVertex))
+            {
+                graph[newVertex] = new Dictionary<string, Edge>();
+                RefreshGraph();
+                textBoxNewVertex.Clear();
+            }
+        }
+
+        private void buttonDeleteVertex_Click(object sender, EventArgs e)
+        {
+            string selectedVertex = (string)listBoxVertices.SelectedItem;
+            if (selectedVertex != null)
+            {
+                foreach (string adjacentVertex in graph[selectedVertex].Keys)
+                {
+                    graph[adjacentVertex].Remove(selectedVertex);
+                }
+                graph.Remove(selectedVertex);
+                RefreshGraph();
+            }
+        }
+
+        private void buttonToggleUnreachable_Click(object sender, EventArgs e)
+        {
+            string selectedVertex = (string)listBoxVertices.SelectedItem;
+            if (selectedVertex != null)
+            {
+                if (unreachable	
+// остава: Да може да извежда списък с всички населени места и туристически обекти, налични в графа, като за всяко е изписано името, броя на входящите ребра и броя на изходящите ребра.
+
+Да може да извежда списък с всички ребра в графа, съдържащи информация за дължината, времето за преминаване и цената.
+
+Да може да извежда най-късия път между два върха при зададени критерии за дължина, време за преминаване или цена. Резултатът да се представя в графичен вид и да бъдат изведени общата дължина, времето за преминаване и цената.
+
+Да има опция за преглед на статистика, която да показва броя на върховете и ребрата в графа, както и средната дължина, време за преминаване и цена на ребрата.
+
+Да може да изпълнява автоматично генериране на граф с определен брой върхове и ребра със случайни характеристики за дължина, време за преминаване и цена.
+
+Да предоставя възможност за търсене на конкретен връх или ребро в графа чрез въвеждане на име или характеристика.
+
+Да има възможност за визуализация на графа, като да се изобразяват върховете и ребрата му. Върховете да бъдат маркирани в различен цвят в зависимост от тяхната категория (населено място или туристически обект).
+
+Да има опция за експортиране на графа във формат, който да позволява използването му в други програми.
